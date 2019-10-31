@@ -1,0 +1,22 @@
+version: "3.4"
+
+services:
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 3301:3301
+    volumes:
+      - ./src:/opt/tarantool/src
+    depends_on:
+      - "dbstorage"
+
+  dbstorage:
+    image: mysql:5.7.19
+    environment:
+      - MYSQL_ROOT_PASSWORD=qwerty
+    volumes:
+      - ./schemas/mysql:/docker-entrypoint-initdb.d
+      - ./conf/mysql/cnf:/etc/mysql/conf.d
+      - ./mysql.log:/var/log/mysql/mysql.log
