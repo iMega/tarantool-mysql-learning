@@ -1,10 +1,11 @@
+local log = require 'log'
 local inspect = require 'inspect'
 local mysql = require('mysql')
 
-box.cfg{}
+box.cfg{log_format = 'json'}
 
 box.once('articles', function()
-    print('======================1==========================')
+    log.info('======================box.once==========================')
 
     local articles = box.schema.space.create('articles', {
         engine = 'memtx',
@@ -19,12 +20,10 @@ box.once('articles', function()
         -- {name = 'title', type = 'string'}
     })
 
-    print('======================2==========================')
     articles:create_index('primary', {type = 'hash', parts = {'site_id'}})
 end)
 
 -- box.schema.user.grant('guest', 'read,write,execute', 'universe')
-print('======================3==========================')
 
 local pool = mysql.pool_create({
     host = 'dbstorage',
@@ -44,24 +43,17 @@ local mysql_conn = pool:get()
 -- local status, data, err = pcall(self.execute, self, 'SELECT 1 AS code')
 local ok, data, err = pcall(mysql_conn.execute, mysql_conn,
                             'select * from articles')
-if not ok then
-    print("=======" .. inspect(ok))
-    print("=======" .. inspect(data))
-    print("=======" .. inspect(err))
-end
--- local res, err = ('select * from articles1')
+if not ok then log.error("failed getting data from mysql " .. data) end
 
-local res = data[1][1]
+local res = data[1][1] -- WTF
 
-box.space.articles:insert({res.siteId, res.id})
+box.space.articles:insert({res.siteId, 2})
 
 print(inspect(res.siteId))
 print(inspect(err))
 
-print('exit')
-
 local d = box.space.articles:select{100500}
-print(inspect(d))
+log.info("===FROM TUPLE" .. inspect(d))
 
 -- local httpd = require('http.server').new('0.0.0.0', 9000, {})
 -- httpd:route({path = '/dictionary/:record_name', method = 'GET'}, get_dictionary_record_handler)
