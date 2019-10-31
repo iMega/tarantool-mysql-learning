@@ -40,7 +40,6 @@ local mysql_conn = pool:get()
 --     box.space.articles:insert({res.siteId, res.id})
 -- end
 
--- local status, data, err = pcall(self.execute, self, 'SELECT 1 AS code')
 local ok, data, err = pcall(mysql_conn.execute, mysql_conn,
                             'select * from articles')
 if not ok then log.error("failed getting data from mysql " .. data) end
