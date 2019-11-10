@@ -7,6 +7,7 @@ services:
       context: .
     ports:
       - 3301:3301
+      - 9000:9000
     volumes:
       - ./src:/opt/tarantool/src
     depends_on:
