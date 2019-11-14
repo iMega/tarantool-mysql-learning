@@ -9,7 +9,7 @@ services:
       - 3301:3301
       - 9000:9000
     volumes:
-      - ./src:/opt/tarantool/src
+      - ./src:/opt/tarantool
     depends_on:
       - "dbstorage"
 

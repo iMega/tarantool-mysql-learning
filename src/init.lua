@@ -2,8 +2,9 @@ local log = require 'log'
 local inspect = require 'inspect'
 local fiber = require 'fiber'
 local mysql = require('mysql')
+local articles = require('articles')
 
-local channels = {http_in = fiber.channel(10)}
+local channels = {http_in = fiber.channel(10), http_in3 = fiber.channel(10)}
 
 box.cfg{log_format = 'json'}
 
@@ -46,6 +47,8 @@ local mysql_conn = pool:get()
 local ok, data, err = pcall(mysql_conn.execute, mysql_conn,
                             'select * from articles')
 if not ok then log.error("failed getting data from mysql " .. data) end
+
+pool:put(mysql_conn)
 
 local res = data[1][1] -- WTF
 
@@ -95,18 +98,82 @@ writerDB = fiber.create(function()
     end
 end)
 
-function http_handler(ctx)
+local function http_handler(ctx)
     log.info("count fibers " .. writerDB.status())
     local ok = channels.http_in:put("test")
     return {status = 200, body = 'test' .. inspect(ok)}
 end
 
-function http_handler2(ctx)
-    log.info("http_handler2 = " .. writerDB.status())
+local function ocuppy_conn()
+    local c = pool:get()
+    log.info("=====ocuppy connection" .. inspect(c))
+
+    local ok, data, err = pcall(c.execute, c, 'select sleep(2)')
+    if not ok then log.error("failed query mysql " .. data) end
+    pool:put(c)
+end
+
+local function http_handler2(ctx)
+    ocuppy_conn()
     return {status = 200, body = 'test'}
+end
+
+local func_worker3
+func_worker3 = function()
+    local msg = channels.http_in3:get()
+    log.info("@@@@@@@@@@ WORK fiber three +++ " .. msg)
+    return func_worker3()
+end
+
+local function func_worker4()
+    local msg = channels.http_in3:get()
+    log.info("@@@@@@@@@@ WORK fiber three +++ " .. msg)
+    return func_worker4()
+end
+
+local w = {channel = "", work = "", shutdown = "", ctx = {}}
+
+local function consumer(worker)
+    local msg = worker.channel:get()
+    if msg == nil then
+        worker.shutdown(worker.ctx)
+        return
+    end
+    local newCtx = worker(ctx, msg) or ctx
+    worker.ctx = worker.work(worker.ctx)
+    return consumer(worker)
+end
+
+local function test_worker(ctx, msg)
+    local s = ctx + msg
+    log.info("@@@@@@@@@@ Worker WORK @@@@@@@ " .. s)
+    return s
+end
+
+local worker3 = fiber.create(consumer, channels.http_in3, test_worker, 1)
+
+local function http_handler3(ctx)
+    local id = ctx:stash("id")
+    local ok = channels.http_in3:put(tonumber(id))
+    return {status = 200, body = ' done \n'}
+end
+
+local function http_handler4(ctx)
+    return {
+        status = 200,
+        body = ' test3 ' .. inspect(worker3:status()) .. ' \n'
+    }
+end
+
+local function http_handler5(ctx)
+    articles.aaa()
+    return {status = 200, body = ' test3 ' .. ' \n'}
 end
 
 local httpd = require('http.server').new('0.0.0.0', 9000, {})
 httpd:route({path = '/', method = 'GET'}, http_handler)
 httpd:route({path = '/2', method = 'GET'}, http_handler2)
+httpd:route({path = '/put/:id', method = 'GET'}, http_handler3)
+httpd:route({path = '/get', method = 'GET'}, http_handler4)
+httpd:route({path = '/close', method = 'GET'}, http_handler5)
 httpd:start()

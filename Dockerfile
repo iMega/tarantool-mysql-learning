@@ -10,11 +10,11 @@ RUN apk add --upd alpine-sdk cmake openssl-dev curl git wget && \
 FROM tarantool/tarantool
 EXPOSE 3301
 WORKDIR /opt/tarantool
-RUN mkdir -p src /opt/tarantool/.rocks/share/tarantool/rocks/mysql
+RUN mkdir -p /opt/.rocks/share/tarantool/rocks/mysql
 
-COPY src src/
+COPY src .
 RUN ls -la
 COPY --from=builder /usr/local/share/lua/5.1/inspect.lua /usr/local/share/lua/5.1/inspect.lua
-COPY --from=builder /opt/tarantool/.rocks/share/tarantool/rocks/mysql /opt/tarantool/.rocks/share/tarantool/rocks/mysql
+COPY --from=builder /opt/tarantool/.rocks/share/tarantool/rocks/mysql /opt/.rocks/share/tarantool/rocks/mysql
 
-CMD ["tarantool", "src/init.lua"]
+CMD ["tarantool", "init.lua"]
