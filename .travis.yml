@@ -1,0 +1,10 @@
+language: ruby
+
+services:
+  - docker
+
+script:
+  - make test
+
+after_script:
+  - make clean

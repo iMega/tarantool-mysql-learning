@@ -21,3 +21,15 @@ services:
       - ./schemas/mysql:/docker-entrypoint-initdb.d
       - ./conf/mysql/cnf:/etc/mysql/conf.d
       - ./mysql.log:/var/log/mysql/mysql.log
+
+  acceptance:
+    image: ${GO_IMG_DEV}
+    volumes:
+      - ./:/go/src/github.com/imega/tarantool-mysql-learning
+    working_dir: "/go/src/github.com/imega/tarantool-mysql-learning"
+    command: >
+      /bin/sh -c "
+        go test -v github.com/imega/tarantool-mysql-learning/acceptance
+      "
+    depends_on:
+      - "app"
