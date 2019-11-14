@@ -1,10 +1,11 @@
 language: ruby
-
 services:
-  - docker
-
+- docker
 script:
-  - make test
-
+- make test
 after_script:
-  - make clean
+- make clean
+notifications:
+  slack:
+    rooms:
+      secure: KxsiJONP2UM0gDrwM7CFTSehQ+uFDZ3hiaU6F/WNfDsMncTGN6nMaJ5eWCrRUaqPAfrQhp+J/eTDu/3Wtmtek4kMV93JF1GVOpyCTFKKVkW29AidI6GklRWen80MrBTRH7QICVt09dmWDkUNhc3SAgl4GZFwyoGgCxdaDi/ebEIYUnoo7ZdSIB5uyPp569dgFYRSTcYsP7Z0QN62FM0vTlZkh1YsSvPVKwF+QrhbfpSQ9+r8V2Wh0B710FJukxDT58HqOELl0UbfFcTLEKR5chuJ4/waiiV1PpLlFb4FjXUBOAcP+LEj4uSVGNeoO+smwWgbqESNm+1Kg68pKXwxu7ryQPZDztNjAjfYLwRlywCEmTFDCWdu44E2M7cLR6/cRAD3FHYi8teme+KVg0B9t0l/XTX9U+uxnq1ZCXrtlpOvvB+W5kw3z4G3BjKSLixWpfuCTysIlQp6AwptILQBB5+P9TwX15jJEYwrUDWf/+KEZ9IJTj2Z1Md122pIGW13Sd46CAVJD5FYA/PoqKfIyN5iMA/38wq/Nye5e+tgi6G0Ge4JC4xqzMW6Q9BwnxRVP9k1U0uTD6SY/6vtN5/xsYYrHaJKvqOvlbwRcZ2ymC14alwLZgKC3rxJ6lwmgnXFtTcRZLRaEsYzbG/15PCht+Dqjq4vVyYc6B4h9vbDc4Q=

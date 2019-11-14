@@ -5,7 +5,7 @@ GO_IMG_DEV = golang:1.10-alpine3.8
 
 clean:
 	@-rm $(CURDIR)/mysql.log
-	@docker-compose rm -sfv
+	@GO_IMG_DEV=$(GO_IMG_DEV) docker-compose rm -sfv
 
 acceptance:
 	@touch $(CURDIR)/mysql.log
