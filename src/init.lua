@@ -165,14 +165,8 @@ local function http_handler4(ctx)
     }
 end
 
-local function http_handler5(ctx)
-
-    -- log.info('=== http_handler5' .. inspect(ctx))
-    log.info('=== http_handler5' .. inspect(ctx:header("x-req-id")))
-    -- print(inspect(ctx:header("x-req-id")))
-    local id = ctx:stash('id')
-    -- local res = articles.article_request_in(nil, {type = 'msg', body = id})
-    return {status = 200, body = ' test3 ' .. inspect(id) .. ' \n'}
+local function article_save_handler(ctx)
+    return {status = 200, body = ' test3 ' .. ' \n'}
 end
 
 local httpd = require('http.server').new('0.0.0.0', 9000, {})
@@ -180,5 +174,5 @@ httpd:route({path = '/', method = 'GET'}, http_handler)
 httpd:route({path = '/2', method = 'GET'}, http_handler2)
 httpd:route({path = '/put/:id', method = 'GET'}, http_handler3)
 httpd:route({path = '/get', method = 'GET'}, http_handler4)
-httpd:route({path = '/close/:id', method = 'GET'}, http_handler5)
+httpd:route({path = '/article/save', method = 'POST'}, article_save_handler)
 httpd:start()
