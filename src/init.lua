@@ -26,6 +26,11 @@ box.once('articles', function()
     articles:create_index('primary', {type = 'hash', parts = {'site_id'}})
 end)
 
+-- 2.0
+-- box.ctl.on_shutdown(function()
+--     log.info("on_shutdown 5")
+-- end)
+
 -- box.schema.user.grant('guest', 'read,write,execute', 'universe')
 
 -- local pool = mysql.pool_create({
