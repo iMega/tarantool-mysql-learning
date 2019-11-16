@@ -1,4 +1,3 @@
-local inspect = require('inspect')
 local log = require('log')
 local worker = require("worker")
 local mysql = require("mysql")
@@ -9,6 +8,7 @@ local function connect(ctx, state, input)
     log.debug('try connect to mysql')
 
     local ok, res = pcall(mysql.pool_create, {
+        -- TODO it is external options
         host = 'dbstorage',
         user = 'root',
         password = 'qwerty',

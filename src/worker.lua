@@ -1,6 +1,4 @@
 local fiber = require("fiber")
-local log = require("log")
-local inspect = require('inspect')
 
 local function consumer(worker)
     local msg
@@ -11,10 +9,8 @@ local function consumer(worker)
         msg = worker.channel:get(worker.timeout)
     end
 
-    -- if msg == nil then
-    --     worker.shutdown(worker.state)
-    --     return
-    -- end
+    -- TODO need append system message for shutdown
+    -- worker.shutdown(worker.state)
 
     if msg == nil then
         msg = {ctx = nil, input = nil}
@@ -32,8 +28,6 @@ local function shutdownEmpty()
 end
 
 local function create(w)
-    log.info("===============CREATE WORKER=====================" ..
-                 inspect(w.timeout))
     local channel = fiber.channel(w.size or 0)
     fiber.create(consumer, {
         channel = channel,
@@ -43,6 +37,7 @@ local function create(w)
         ctx = w.ctx,
         timeout = w.timeout,
     })
+
     return function(ctx, input)
         return channel:put({ctx = ctx, input = input})
     end
