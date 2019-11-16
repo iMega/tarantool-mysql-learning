@@ -3,7 +3,7 @@ box.cfg{log_format = 'json'}
 local log = require 'log'
 local inspect = require 'inspect'
 local articles = require('articles')
-local httpd = require('http.server').new('0.0.0.0', 9000, {})
+local http_server = require('http.server')
 local mysqlpool = require('mysqlpool').new()
 local worker = require('worker')
 
@@ -136,7 +136,15 @@ end)
 --     return {status = 200, body = ' done \n'}
 -- end
 
+local is_shutdown = false
+
 local function http_handler(ctx)
+    log.info('====== http_handler =======')
+
+    if is_shutdown then
+        return {status = 503, body = 'is_shutdown  ' .. ' \n'}
+    end
+
     -- local pool = mysqlpool.get_pool()
     -- local conn = pool:get()
 
@@ -149,7 +157,14 @@ local function http_handler(ctx)
     -- log.info('======http_handler1===========' .. inspect(conn))
     -- log.info('======http_handler2===========' .. inspect(conn:ping()))
     -- log.info('======http_handler3===========' .. inspect(status))
-    return {status = 200, body = 'root  ' .. ' \n'}
+    return {
+        status = 200,
+        headers = {
+            ['server'] = 'trololo',
+            ['content-type'] = 'application/json; charset=utf8',
+        },
+        body = 'root  ' .. ' \n',
+    }
 end
 
 -- local function pinger()
@@ -157,16 +172,27 @@ end
 -- end
 -- worker.create({size = 1, work = pinger, timeout = 1})
 
+local httpd = http_server.new('0.0.0.0', 9000, {})
+
 local signal = require("posix.signal")
 signal.signal(signal.SIGTERM, function(signum)
-    print("===============")
     log.info('====== SIGNAL ======= %d', signum)
+    is_shutdown = true
+    -- httpd:stop()
 end)
 
 local function article_save_handler(ctx)
+    log.info('====== article_save_handler =======')
     return {status = 200, body = ' test3 ' .. ' \n'}
 end
 
 httpd:route({path = '/', method = 'GET'}, http_handler)
 httpd:route({path = '/article/save', method = 'POST'}, article_save_handler)
+
+-- хрень
+-- local function before_dispatch(httpd, req)
+--     log.info('====== before_dispatch =======')
+-- end
+-- httpd:hook('before_dispatch', before_dispatch)
+
 httpd:start()
