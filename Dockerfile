@@ -1,16 +1,16 @@
-FROM tarantool/tarantool as builder
+FROM tarantool/tarantool:2.2.1 as builder
 
-RUN apk add --upd alpine-sdk cmake openssl-dev curl git wget && \
+RUN apk add --upd alpine-sdk cmake openssl-dev curl git wget unzip && \
     luarocks install inspect && \
-    tarantoolctl rocks install mysql 
+    tarantoolctl rocks install mysql
 # /usr/local/share/lua/5.1/inspect.lua
 #-- Installing: /opt/tarantool/.rocks/share/tarantool/rocks/mysql/scm-1/lib/mysql/driver.so
 #-- Installing: /opt/tarantool/.rocks/share/tarantool/rocks/mysql/scm-1/lua/mysql/init.lua
 
-FROM tarantool/tarantool
+FROM tarantool/tarantool:2.2.1
 EXPOSE 3301
 WORKDIR /opt/tarantool
-RUN apk add --upd alpine-sdk cmake openssl-dev curl git wget lua5.1-dev && \
+RUN apk add --upd alpine-sdk cmake openssl-dev curl git wget lua5.1-dev unzip && \
     luarocks install luaposix
 RUN mkdir -p /opt/.rocks/share/tarantool/rocks/mysql
 

@@ -4,22 +4,20 @@ local function consumer(worker)
     local msg
 
     if worker.timeout == nil then
-        msg = worker.channel:get()
+        msg = worker.channel_in:get()
     else
-        msg = worker.channel:get(worker.timeout)
+        msg = worker.channel_in:get(worker.timeout)
     end
-
-    -- TODO need append system message for shutdown
-    -- worker.shutdown(worker.state)
 
     if msg == nil then
         msg = {ctx = nil, input = nil}
     end
 
-    local newState = worker.work(msg.ctx, worker.state, msg.input) or
-                         worker.state
+    -- TODO need append system message for shutdown
+    -- worker.shutdown(worker.state)
 
-    worker.state = newState
+    local result = worker.work(msg.ctx, worker.state, msg.input)
+    worker.channel_out:put(result)
 
     return consumer(worker)
 end
@@ -27,20 +25,22 @@ end
 local function shutdownEmpty()
 end
 
-local function create(w)
-    local channel = fiber.channel(w.size or 0)
+local function new(w)
+    local channel_in = fiber.channel(w.size or 0)
+    local channel_out = fiber.channel()
     fiber.create(consumer, {
-        channel = channel,
+        channel_in = channel_in,
+        channel_out = channel_out,
         work = w.work,
         state = w.state,
         shutdown = w.shutdown or shutdownEmpty,
-        ctx = w.ctx,
         timeout = w.timeout,
     })
 
     return function(ctx, input)
-        return channel:put({ctx = ctx, input = input})
+        channel_in:put({ctx = ctx, input = input})
+        return channel_out:get()
     end
 end
 
-return {create = create}
+return {new = new}

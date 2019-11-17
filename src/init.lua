@@ -5,7 +5,6 @@ local inspect = require 'inspect'
 local articles = require('articles')
 local http_server = require('http.server')
 local mysqlpool = require('mysqlpool').new()
-local worker = require('worker')
 
 box.once('articles', function()
     log.info('======================box.once==========================')
@@ -26,9 +25,9 @@ box.once('articles', function()
     articles:create_index('primary', {type = 'hash', parts = {'site_id'}})
 end)
 
--- 2.0
--- box.ctl.on_shutdown(function()
---     log.info("on_shutdown 5")
+-- 2.2.1 not work
+-- _ = box.ctl.on_shutdown(function()
+--     log.warn("================= shutdown ===============")
 -- end)
 
 -- box.schema.user.grant('guest', 'read,write,execute', 'universe')
@@ -144,7 +143,7 @@ end)
 local is_shutdown = false
 
 local function http_handler(ctx)
-    log.info('====== http_handler =======')
+    -- log.info('====== http_handler =======')
 
     if is_shutdown then
         return {status = 503, body = 'is_shutdown  ' .. ' \n'}
@@ -186,9 +185,14 @@ signal.signal(signal.SIGTERM, function(signum)
     -- httpd:stop()
 end)
 
+local function article_save_handler_out(ctx, state, input)
+
+end
+
 local function article_save_handler(ctx)
-    log.info('====== article_save_handler =======')
-    return {status = 200, body = ' test3 ' .. ' \n'}
+    local res = "1"
+    articles.article_request_in({}, ctx:json())
+    return {status = 200, body = ' test3 ' .. inspect(res) .. ' \n'}
 end
 
 httpd:route({path = '/', method = 'GET'}, http_handler)

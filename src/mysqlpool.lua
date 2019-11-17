@@ -24,7 +24,7 @@ local function connect(ctx, state, input)
     pool = res
 end
 
-local need_connect_in = worker.create({size = 1, work = connect, state = {}})
+local need_connect_in = worker.new({size = 1, work = connect, state = {}})
 
 local function connect_checker(ctx, state, input)
     if pool == nil then
@@ -40,7 +40,7 @@ local function connect_checker(ctx, state, input)
     pool:put(conn)
 end
 
-connect_checker_in = worker.create({
+local connect_checker_in = worker.new({
     size = 1,
     work = connect_checker,
     timeout = 10,
