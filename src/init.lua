@@ -3,11 +3,11 @@ box.cfg{log_format = 'json'}
 
 local log = require('log')
 local inspect = require('inspect')
-local articles = require('articles')
+local signal = require("posix.signal")
 local http_server = require('http.server')
--- local http_server = require('http.nginx_server')
 local http_router = require('http.router')
 local mysqlpool = require('mysqlpool').new()
+local articles = require('articles').new({db = mysqlpool})
 
 box.once('articles', function()
     log.info('======================box.once==========================')
@@ -148,10 +148,6 @@ local is_shutdown = false
 local function http_handler(ctx)
     -- log.info('====== http_handler =======')
 
-    if is_shutdown then
-        return {status = 503, body = 'is_shutdown  ' .. ' \n'}
-    end
-
     -- local pool = mysqlpool.get_pool()
     -- local conn = pool:get()
 
@@ -179,7 +175,6 @@ end
 -- end
 -- worker.create({size = 1, work = pinger, timeout = 1})
 
-local signal = require("posix.signal")
 signal.signal(signal.SIGTERM, function(signum)
     log.info('====== SIGNAL ======= %d', signum)
     is_shutdown = true
@@ -192,26 +187,26 @@ end
 
 local function article_save_handler(ctx)
     local res = "1"
-    articles.article_request_in({}, ctx:json())
+    articles.save({}, ctx:json())
+    -- articles.article_request_in({}, ctx:json())
     return {status = 200, body = ' test3 ' .. inspect(res) .. ' \n'}
 end
 
--- хрень
--- local function before_dispatch(httpd, req)
---     log.info('====== before_dispatch =======')
--- end
--- httpd:hook('before_dispatch', before_dispatch)
-local httpd = http_server.new('0.0.0.0', 9000,
-                              {log_requests = true, log_errors = true})
--- local httpd = http_server.new({
---     host = '0.0.0.0',
---     port = 9000,
---     tnt_method = 'nginx_entrypoint',
---     log_requests = true,
---     log_errors = true,
--- })
+local function http_shutdown(req)
+    if is_shutdown then
+        return {status = 503}
+    end
+    return req:next()
+end
+
 local router = http_router.new()
-httpd:set_router(router)
+router:use(http_shutdown, {preroute = true, path = '.*', method = 'ANY'})
+router:use(http_shutdown, {preroute = true, path = '/', method = 'ANY'})
+
 router:route({path = '/', method = 'GET'}, http_handler)
 router:route({path = '/article/save', method = 'POST'}, article_save_handler)
+
+local httpd = http_server.new('0.0.0.0', 9000,
+                              {log_requests = false, log_errors = true})
+httpd:set_router(router)
 httpd:start()
