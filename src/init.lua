@@ -5,6 +5,8 @@ local log = require('log')
 local inspect = require('inspect')
 local articles = require('articles')
 local http_server = require('http.server')
+-- local http_server = require('http.nginx_server')
+local http_router = require('http.router')
 local mysqlpool = require('mysqlpool').new()
 
 box.once('articles', function()
@@ -177,8 +179,6 @@ end
 -- end
 -- worker.create({size = 1, work = pinger, timeout = 1})
 
-local httpd = http_server.new('0.0.0.0', 9000, {})
-
 local signal = require("posix.signal")
 signal.signal(signal.SIGTERM, function(signum)
     log.info('====== SIGNAL ======= %d', signum)
@@ -196,13 +196,22 @@ local function article_save_handler(ctx)
     return {status = 200, body = ' test3 ' .. inspect(res) .. ' \n'}
 end
 
-httpd:route({path = '/', method = 'GET'}, http_handler)
-httpd:route({path = '/article/save', method = 'POST'}, article_save_handler)
-
 -- хрень
 -- local function before_dispatch(httpd, req)
 --     log.info('====== before_dispatch =======')
 -- end
 -- httpd:hook('before_dispatch', before_dispatch)
-
+local httpd = http_server.new('0.0.0.0', 9000,
+                              {log_requests = true, log_errors = true})
+-- local httpd = http_server.new({
+--     host = '0.0.0.0',
+--     port = 9000,
+--     tnt_method = 'nginx_entrypoint',
+--     log_requests = true,
+--     log_errors = true,
+-- })
+local router = http_router.new()
+httpd:set_router(router)
+router:route({path = '/', method = 'GET'}, http_handler)
+router:route({path = '/article/save', method = 'POST'}, article_save_handler)
 httpd:start()
