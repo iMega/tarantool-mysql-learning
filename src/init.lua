@@ -1,7 +1,8 @@
+local box = require('box')
 box.cfg{log_format = 'json'}
 
-local log = require 'log'
-local inspect = require 'inspect'
+local log = require('log')
+local inspect = require('inspect')
 local articles = require('articles')
 local http_server = require('http.server')
 local mysqlpool = require('mysqlpool').new()

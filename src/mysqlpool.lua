@@ -4,7 +4,7 @@ local mysql = require("mysql")
 
 local pool
 
-local function connect(ctx, state, input)
+local function connect()
     log.debug('try connect to mysql')
 
     local ok, res = pcall(mysql.pool_create, {
