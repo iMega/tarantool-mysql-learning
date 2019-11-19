@@ -1,36 +1,39 @@
 local worker = require("worker")
-local log = require("log")
-local inspect = require("inspect")
+-- local log = require("log")
+-- local inspect = require("inspect")
 local mysql = require("articles.mysql")
 
--- local M = {}
-
-local function article_save(ctx, state, input)
-    log.info("=== article_save" .. inspect(input))
-    state.storage.save()
+local function table_filter(original, input)
+    local res = {}
+    for k, v in pairs(original) do
+        res[k] = v
+    end
+    for k, v in pairs(input) do
+        if res[k] ~= nil then
+            res[k] = v
+        end
+    end
+    return res
 end
 
--- local function article_request_in(ctx, state, input)
+local article_default = {
+    category_id = 0,
+    create_at = "",
+    update_at = "",
+    title = "",
+    body = "",
+    tags = {},
+    seo = {title = "", description = "", keywords = {}},
+    is_visible = true,
+    is_deleted = false,
+}
 
---     log.info("=== article_request_in" .. inspect(state))
---     state.test = state.test + 1
+local function save_article(ctx, state, input)
+    local data = table_filter(article_default, input)
 
---     M.get_article_in(ctx, {body = input})
---     return "aaaaaa"
--- end
-
--- M.article_request_in = worker.new({
---     size = 10,
---     work = article_request_in,
---     state = {test = 1},
--- })
-
--- local function get_article(ctx, state, input)
---     --
---     log.info("=== get_article" .. inspect(input.body) .. "====" .. inspect(ctx))
--- end
-
--- M.get_article_in = worker.new({size = 10, work = get_article, state = {}})
+    state.storage.save(ctx, data)
+    return true
+end
 
 local function new(opts)
     local mysql_storage = mysql.new({db = opts.db})
@@ -38,7 +41,7 @@ local function new(opts)
     return {
         save = worker.new({
             size = 10,
-            work = article_save,
+            work = save_article,
             state = {storage = mysql_storage},
         }),
     }

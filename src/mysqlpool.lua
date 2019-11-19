@@ -26,7 +26,7 @@ end
 
 local need_connect_in = worker.new({size = 1, work = connect, state = {}})
 
-local function connect_checker(ctx, state, input)
+local function connect_checker(ctx)
     if pool == nil then
         need_connect_in(ctx, true)
         return

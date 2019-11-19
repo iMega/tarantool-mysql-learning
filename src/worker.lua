@@ -39,7 +39,7 @@ local function new(w)
 
     return function(ctx, input)
         channel_in:put({ctx = ctx, input = input})
-        return channel_out:get()
+        return channel_out:get(w.response and w.response.timeout)
     end
 end
 
