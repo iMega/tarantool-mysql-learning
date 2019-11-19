@@ -1,6 +1,7 @@
--- local box = require('box')
+local box = require('box')
 local worker = require('worker')
--- local log = require('log')
+local json = require('json')
+local log = require('log')
 -- local inspect = require('inspect')
 local mysql = require('articles.mysql')
 
@@ -31,8 +32,23 @@ local article_default = {
 
 local function save_article(ctx, state, input)
     local data = table_filter(article_default, input)
-    -- box.space.articles:insert({res.siteId, 2})
+    local entity = json.encode(data)
+
+    local ok, err = pcall(box.space.articles.insert, box.space.articles, {
+        tonumber(ctx.site_id), 2, entity, data.create_at, data.update_at,
+        data.is_deleted,
+    })
+    if not ok then
+        log.error({
+            message = string.format("failed to insert data to box, %s", err),
+            ['req-id'] = ctx.req_id,
+            ['site-id'] = ctx.site_id,
+        })
+        return false
+    end
+
     state.storage.save(ctx, data)
+
     return true
 end
 

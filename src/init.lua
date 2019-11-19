@@ -1,5 +1,5 @@
 local box = require('box')
-box.cfg{log_format = 'json', log_level = 5}
+box.cfg{feedback_enabled = false, log_format = 'json', log_level = 5}
 
 -- local log = require('log')
 local inspect = require('inspect')
@@ -19,11 +19,9 @@ box.once('articles', function()
     articles_space:format({
         {name = 'site_id', type = 'unsigned'},
         {name = 'entity_id', type = 'unsigned'},
+        {name = 'entity', type = 'string'},
         {name = 'create_at', type = 'string'},
         {name = 'update_at', type = 'string'},
-        {name = 'title', type = 'string'}, {name = 'body', type = 'string'},
-        {name = 'tags', type = 'array'}, {name = 'seo', type = 'string'},
-        {name = 'is_visible', type = 'boolean'},
         {name = 'is_deleted', type = 'boolean'},
     })
 
