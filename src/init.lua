@@ -1,5 +1,5 @@
 local box = require('box')
-box.cfg{log_format = 'json'}
+box.cfg{log_format = 'json', log_level = 5}
 
 -- local log = require('log')
 local inspect = require('inspect')
@@ -96,10 +96,7 @@ local is_shutdown = false
 local function http_handler()
     return {
         status = 200,
-        headers = {
-            ['server'] = 'trololo',
-            ['content-type'] = 'application/json; charset=utf8',
-        },
+        headers = {['content-type'] = 'application/json; charset=utf8'},
         body = 'root1  ' .. ' \n',
     }
 end
@@ -136,7 +133,11 @@ end
 
 local function http_response_headers(req)
     local resp = req:next()
+    if resp.headers == nil then
+        resp.headers = {}
+    end
     resp.headers['x-req-id'] = req.req_id
+    resp.headers['content-type'] = 'application/json; charset=utf8'
     resp.headers['server'] = 'server'
     return resp
 end

@@ -5,6 +5,9 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
+    environment:
+      - TARANTOOL_USER_NAME=article
+      - TARANTOOL_USER_PASSWORD=qwerty
     ports:
       - 3301:3301
       - 9000:9000
