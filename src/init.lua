@@ -105,9 +105,9 @@ signal.signal(signal.SIGTERM, function()
     is_shutdown = true
 end)
 
-local function article_save_handler(ctx)
-    local res = articles.save({}, ctx:json())
-
+local function article_save_handler(req)
+    local res = articles.save({site_id = req.site_id, req_id = req.req_id},
+                              req:json())
     return {status = 200, body = ' test3 ' .. inspect(res) .. ' \n'}
 end
 

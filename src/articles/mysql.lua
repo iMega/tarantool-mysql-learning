@@ -4,10 +4,13 @@ local worker = require('worker')
 
 local db
 
-local function save(_, _, input)
+local function save(ctx, _, input)
     if db == nil then
-        log.error("failed to insert data to mysql, %s",
-                  "db instance not yet initialized.")
+        log.error({
+            message = "failed to insert data to mysql, db instance not yet initialized.",
+            ['req-id'] = ctx.req_id,
+            ['site-id'] = ctx.site_id,
+        })
         return false
     end
 
