@@ -19,11 +19,18 @@ box.once('articles', function()
     articles_space:format({
         {name = 'site_id', type = 'unsigned'},
         {name = 'entity_id', type = 'unsigned'},
-        -- {name = 'create_at', type = 'unsigned'}
-        -- {name = 'title', type = 'string'}
+        {name = 'create_at', type = 'string'},
+        {name = 'update_at', type = 'string'},
+        {name = 'title', type = 'string'}, {name = 'body', type = 'string'},
+        {name = 'tags', type = 'array'}, {name = 'seo', type = 'string'},
+        {name = 'is_visible', type = 'boolean'},
+        {name = 'is_deleted', type = 'boolean'},
     })
 
-    articles_space:create_index('primary', {type = 'hash', parts = {'site_id'}})
+    articles_space:create_index('primary', {
+        type = 'hash',
+        parts = {1, 'unsigned', 2, 'unsigned'},
+    })
 end)
 
 -- 2.2.1 not work
@@ -114,9 +121,33 @@ local function http_shutdown(req)
     return req:next()
 end
 
+local function http_set_context(req)
+    local site_id = req:header('x-site-id')
+    local req_id = req:header('x-req-id')
+    if site_id == nil or req_id == nil then
+        return {status = 400}
+    end
+
+    req.site_id = site_id
+    req.req_id = req_id
+
+    return req:next()
+end
+
+local function http_response_headers(req)
+    local resp = req:next()
+    resp.headers['x-req-id'] = req.req_id
+    resp.headers['server'] = 'server'
+    return resp
+end
+
 local router = http_router.new()
 router:use(http_shutdown, {preroute = true, path = '.*', method = 'ANY'})
 router:use(http_shutdown, {preroute = true, path = '/', method = 'ANY'})
+router:use(http_set_context, {path = '.*', method = 'ANY'})
+router:use(http_set_context, {path = '/', method = 'ANY'})
+router:use(http_response_headers, {path = '.*', method = 'ANY'})
+router:use(http_response_headers, {path = '/', method = 'ANY'})
 
 router:route({path = '/', method = 'GET'}, http_handler)
 router:route({path = '/save', method = 'POST'}, article_save_handler)

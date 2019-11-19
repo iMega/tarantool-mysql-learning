@@ -1,7 +1,8 @@
-local worker = require("worker")
--- local log = require("log")
--- local inspect = require("inspect")
-local mysql = require("articles.mysql")
+-- local box = require('box')
+local worker = require('worker')
+-- local log = require('log')
+-- local inspect = require('inspect')
+local mysql = require('articles.mysql')
 
 local function table_filter(original, input)
     local res = {}
@@ -30,7 +31,7 @@ local article_default = {
 
 local function save_article(ctx, state, input)
     local data = table_filter(article_default, input)
-
+    -- box.space.articles:insert({res.siteId, 2})
     state.storage.save(ctx, data)
     return true
 end
