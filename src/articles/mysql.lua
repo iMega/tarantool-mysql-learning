@@ -61,7 +61,7 @@ local function save(ctx, _, input)
 
     db.put(conn)
 
-    return {entity_id = db.extract(data)}
+    return db.extract(data)
 end
 
 local function new(opts)

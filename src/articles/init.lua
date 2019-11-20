@@ -2,7 +2,7 @@ local box = require('box')
 local worker = require('worker')
 local json = require('json')
 local log = require('log')
--- local inspect = require('inspect')
+local inspect = require('inspect')
 local mysql = require('articles.mysql')
 
 local function table_filter(original, input)
@@ -40,7 +40,7 @@ local function save_article(ctx, state, input)
     end
 
     local ok, err = pcall(box.space.articles.insert, box.space.articles, {
-        tonumber(ctx.site_id), tonumber(res.entity_id), entity, data.create_at,
+        tonumber(ctx.site_id), tonumber(res.id), entity, data.create_at,
         data.update_at, data.is_deleted,
     })
     if not ok then
