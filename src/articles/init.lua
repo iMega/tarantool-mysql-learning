@@ -2,7 +2,7 @@ local box = require('box')
 local worker = require('worker')
 local json = require('json')
 local log = require('log')
-local inspect = require('inspect')
+-- local inspect = require('inspect')
 local mysql = require('articles.mysql')
 
 local function table_filter(original, input)
