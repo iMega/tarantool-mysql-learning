@@ -12,6 +12,7 @@ acceptance:
 	@chmod 666 $(CURDIR)/mysql.log
 	@GO_IMG_DEV=$(GO_IMG_DEV) docker-compose up -d --scale acceptance=0
 	@GO_IMG_DEV=$(GO_IMG_DEV) docker-compose up --abort-on-container-exit acceptance
+	@docker-compose ps
 
 lint:
 	@docker run --rm -v $(CURDIR):/data yangm97/luacheck
