@@ -17,7 +17,7 @@ var _ = BeforeSuite(func() {
 })
 
 func WaitForSystemUnderTestReady() error {
-	attempts := 30
+	attempts := 40
 	for {
 		resp, err := http.Get("http://app:9000")
 		if err == nil && resp.StatusCode == http.StatusOK {
