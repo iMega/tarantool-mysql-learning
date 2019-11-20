@@ -91,12 +91,13 @@ end)
 
 local is_shutdown = false
 
-local function http_handler()
-    return {
-        status = 200,
-        headers = {['content-type'] = 'application/json; charset=utf8'},
-        body = 'root1  ' .. ' \n',
-    }
+local function healtcheck()
+    local conn = mysqlpool.get_pool.get()
+    if not conn then
+        return {status = 503, body = '{"status":"starting"}\n'}
+    end
+    mysqlpool.get_pool.put(conn)
+    return {status = 200, body = '{"status":"healthy"}\n'}
 end
 
 signal.signal(signal.SIGTERM, function()
@@ -134,7 +135,6 @@ local function http_response_headers(req)
     if resp.headers == nil then
         resp.headers = {}
     end
-    resp.headers['x-req-id'] = req.req_id
     resp.headers['content-type'] = 'application/json; charset=utf8'
     resp.headers['server'] = 'server'
     return resp
@@ -144,11 +144,10 @@ local router = http_router.new()
 router:use(http_shutdown, {preroute = true, path = '.*', method = 'ANY'})
 router:use(http_shutdown, {preroute = true, path = '/', method = 'ANY'})
 router:use(http_set_context, {path = '.*', method = 'ANY'})
-router:use(http_set_context, {path = '/', method = 'ANY'})
 router:use(http_response_headers, {path = '.*', method = 'ANY'})
 router:use(http_response_headers, {path = '/', method = 'ANY'})
 
-router:route({path = '/', method = 'GET'}, http_handler)
+router:route({path = '/', method = 'GET'}, healtcheck)
 router:route({path = '/save', method = 'POST'}, article_save_handler)
 
 local httpd = http_server.new('0.0.0.0', 9000,
