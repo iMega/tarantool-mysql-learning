@@ -7,7 +7,7 @@ local signal = require("posix.signal")
 local http_server = require('http.server')
 local http_router = require('http.router')
 local mysqlpool = require('mysqlpool').new()
-local articles = require('articles').new({db = mysqlpool.get_pool()})
+local articles = require('articles').new({db = mysqlpool.get_pool})
 
 box.once('articles', function()
     local articles_space = box.schema.space.create('articles', {

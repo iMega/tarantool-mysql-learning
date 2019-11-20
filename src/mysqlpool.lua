@@ -24,7 +24,7 @@ local function connect()
     pool = res
 end
 
-local need_connect_in = worker.new({size = 1, work = connect, state = {}})
+local need_connect_in = worker.new({work = connect, name = "need_connect"})
 
 local function connect_checker(ctx)
     if pool == nil then
@@ -41,18 +41,30 @@ local function connect_checker(ctx)
 end
 
 local connect_checker_in = worker.new({
-    size = 1,
     work = connect_checker,
     timeout = 10,
+    name = "connect_checker",
 })
 
 local function get_pool()
-    return pool
+    return {
+        get = function()
+            if pool ~= nil then
+                return pool:get()
+            end
+        end,
+        put = function(conn)
+            return pool:put(conn)
+        end,
+        extract = function(data)
+            return data[1][1]
+        end,
+    }
 end
 
 local function new()
     connect_checker_in(nil, true)
-    return {get_pool = get_pool}
+    return {get_pool = get_pool()}
 end
 
 return {new = new}

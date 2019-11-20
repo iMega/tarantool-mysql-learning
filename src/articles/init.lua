@@ -34,20 +34,23 @@ local function save_article(ctx, state, input)
     local data = table_filter(article_default, input)
     local entity = json.encode(data)
 
+    local res = state.storage.save(ctx, data)
+    if res == nil then
+        return false
+    end
+
     local ok, err = pcall(box.space.articles.insert, box.space.articles, {
-        tonumber(ctx.site_id), 2, entity, data.create_at, data.update_at,
-        data.is_deleted,
+        tonumber(ctx.site_id), tonumber(res.entity_id), entity, data.create_at,
+        data.update_at, data.is_deleted,
     })
     if not ok then
         log.error({
-            message = string.format("failed to insert data to box, %s", err),
+            message = string.format('failed to insert data to box, %s', err),
             ['req-id'] = ctx.req_id,
             ['site-id'] = ctx.site_id,
         })
         return false
     end
-
-    state.storage.save(ctx, data)
 
     return true
 end

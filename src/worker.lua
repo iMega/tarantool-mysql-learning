@@ -1,4 +1,5 @@
 local fiber = require("fiber")
+local log = require('log')
 
 local function consumer(worker)
     local msg
@@ -16,8 +17,20 @@ local function consumer(worker)
     -- TODO need append system message for shutdown
     -- worker.shutdown(worker.state)
 
-    local result = worker.work(msg.ctx, worker.state, msg.input)
-    worker.channel_out:put(result)
+    local ok, result = pcall(worker.work, msg.ctx, worker.state, msg.input)
+    if not ok then
+        log.error('failed to start function of worker %s', worker.name)
+    end
+
+    if worker.channel_out:has_readers() then
+        log.debug('attempt to put a message to channel of worker %s',
+                  worker.name)
+        ok = worker.channel_out:put(result, 60)
+        if not ok then
+            log.error('failed to put message in channel of worker %s %s',
+                      worker.name, 'because no free slots or channel is closed.')
+        end
+    end
 
     return consumer(worker)
 end
@@ -26,9 +39,10 @@ local function shutdownEmpty()
 end
 
 local function new(w)
-    local channel_in = fiber.channel(w.size or 0)
+    local channel_in = fiber.channel(w.size)
     local channel_out = fiber.channel()
     fiber.create(consumer, {
+        name = w.name or '',
         channel_in = channel_in,
         channel_out = channel_out,
         work = w.work,

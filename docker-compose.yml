@@ -13,8 +13,6 @@ services:
       - 9000:9000
     volumes:
       - ./src:/opt/tarantool
-    depends_on:
-      - "dbstorage"
 
   dbstorage:
     image: mysql:5.7.19

@@ -1,20 +1,19 @@
 local log = require('log')
--- local inspect = require('inspect')
 local worker = require('worker')
 
 local db
 
 local function save(ctx, _, input)
-    if db == nil then
+    local conn = db.get()
+    if conn == nil then
         log.error({
-            message = "failed to insert data to mysql, db instance not yet initialized.",
+            message = 'failed to insert data to mysql, db instance not yet initialized.',
             ['req-id'] = ctx.req_id,
             ['site-id'] = ctx.site_id,
         })
-        return false
+        return
     end
 
-    local conn = db:get()
     local q = [[
         insert articles (
                         siteId,
@@ -39,21 +38,35 @@ local function save(ctx, _, input)
                            "input.tags", input.seo.description,
                            "input.seo.keywords", input.seo.title, 0, 1)
     if not ok then
-        log.error("failed to insert data to mysql, " .. data)
-        db:put(conn)
-        return false
+        log.error({
+            message = string.format('failed to insert data to mysql, %s', data),
+            ['req-id'] = ctx.req_id,
+            ['site-id'] = ctx.site_id,
+        })
+        db.put(conn)
+        return
     end
 
-    db:put(conn)
+    ok, data = pcall(conn.execute, conn, 'select LAST_INSERT_ID() id')
+    if not ok then
+        log.error({
+            message = string.format(
+                'failed to select last insert id from mysql, %s', data),
+            ['req-id'] = ctx.req_id,
+            ['site-id'] = ctx.site_id,
+        })
+        db.put(conn)
+        return
+    end
 
-    return true
+    db.put(conn)
+
+    return {entity_id = db.extract(data)}
 end
 
 local function new(opts)
     db = opts.db
-    return {
-        save = worker.new({size = 10, work = save, response = {timeout = 0}}),
-    }
+    return {save = worker.new({size = 10, work = save})}
 end
 
 return {new = new}
