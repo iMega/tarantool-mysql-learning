@@ -7,7 +7,7 @@ import (
 
 	"github.com/imega/tarantool-mysql-learning/acceptance/helper"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	//. "github.com/onsi/gomega"
 )
 
 type Seo struct {
