@@ -2,12 +2,11 @@ package acceptance
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/imega/tarantool-mysql-learning/acceptance/helper"
 	. "github.com/onsi/ginkgo"
-	//. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 type Seo struct {
@@ -29,34 +28,17 @@ type Article struct {
 }
 
 var _ = Describe("Articles", func() {
+	var expected Article
 	Context("create article", func() {
 		It("article added", func() {
-			body := struct {
-				CategoryID int64    `json:"category_id"`
-				CreateAt   string   `json:"create_at"`
-				UpdateAt   string   `json:"update_at"`
-				Title      string   `json:"title"`
-				Body       string   `json:"body"`
-				Tags       []string `json:"tags"`
-				Seo        struct {
-					Title       string   `json:"title"`
-					Description string   `json:"description"`
-					Keywords    []string `json:"keywords"`
-				}
-				IsVisible bool `json:"is_visible"`
-				IsDelete  bool `json:"is_deleted"`
-			}{
+			expected = Article{
 				CategoryID: 0,
 				CreateAt:   time.Now().Format("2006-01-02 15:04:05"),
 				UpdateAt:   time.Now().Format("2006-01-02 15:04:05"),
 				Title:      "test title",
 				Body:       "body",
 				Tags:       []string{"tag1", "tag2", "tag3"},
-				Seo: struct {
-					Title       string   `json:"title"`
-					Description string   `json:"description"`
-					Keywords    []string `json:"keywords"`
-				}{
+				Seo: Seo{
 					Title:       "seo-title",
 					Description: "seo-desc",
 					Keywords:    []string{"key"},
@@ -65,23 +47,22 @@ var _ = Describe("Articles", func() {
 				IsDelete:  false,
 			}
 
-			_, bc := helper.RequestPOST("/save", "100500", body)
+			_, bc := helper.RequestPOST("/save", "100500", expected)
 			bc()
 		})
 	})
 
 	Context("get article #1", func() {
 		It("article geting", func() {
-			b, bc := helper.RequestGET("/article/1", "100500")
+			b, bc := helper.RequestGET("/article/2", "100500")
 			bc()
 
-			body := Article{}
+			actual := Article{}
 
-			// err :=
-			json.Unmarshal(b, &body)
-			// Expect(err).NotTo(HaveOccurred())
+			err := json.Unmarshal(b, &actual)
+			Expect(err).NotTo(HaveOccurred())
 
-			fmt.Printf("%#v", body)
+			Expect(expected.Title).To(Equal(actual.Title))
 		})
 	})
 })

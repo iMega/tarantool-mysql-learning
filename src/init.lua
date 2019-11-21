@@ -2,7 +2,7 @@ local box = require('box')
 box.cfg{feedback_enabled = false, log_format = 'json', log_level = 5}
 
 -- local log = require('log')
-local inspect = require('inspect')
+-- local inspect = require('inspect')
 local signal = require("posix.signal")
 local http_server = require('http.server')
 local http_router = require('http.router')
@@ -107,13 +107,17 @@ end)
 local function article_save_handler(req)
     local res = articles.save({site_id = req.site_id, req_id = req.req_id},
                               req:json())
-    return {status = 200, body = ' test3 ' .. inspect(res) .. ' \n'}
+    if not res then
+        return {status = 500}
+    end
+
+    return {status = 200}
 end
 
 local function article_get_handler(req)
     local id = req:stash('id')
     local res = articles.get({site_id = req.site_id, req_id = req.req_id}, id)
-    return {status = 200, res}
+    return {status = 200, body = res}
 end
 
 local function http_shutdown(req)

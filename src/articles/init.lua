@@ -59,7 +59,7 @@ local function get_article(ctx, _, input)
     local ok, res = pcall(box.space.articles.select, box.space.articles,
                           {tonumber(ctx.site_id), tonumber(input)})
     if ok then
-        return res.entity
+        return res[1][3]
     end
 end
 
