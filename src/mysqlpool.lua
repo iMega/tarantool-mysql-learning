@@ -10,6 +10,7 @@ local function connect()
     local ok, res = pcall(mysql.pool_create, {
         -- TODO it is external options
         host = 'dbstorage',
+        port = 3360,
         user = 'root',
         password = 'qwerty',
         db = 'tester',
