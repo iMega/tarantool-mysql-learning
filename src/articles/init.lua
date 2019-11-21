@@ -55,6 +55,14 @@ local function save_article(ctx, state, input)
     return true
 end
 
+local function get_article(ctx, _, input)
+    local ok, res = pcall(box.space.articles.select, box.space.articles,
+                          {tonumber(ctx.site_id), tonumber(input)})
+    if ok then
+        return res.entity
+    end
+end
+
 local function new(opts)
     local mysql_storage = mysql.new({db = opts.db})
 
@@ -62,6 +70,11 @@ local function new(opts)
         save = worker.new({
             size = 10,
             work = save_article,
+            state = {storage = mysql_storage},
+        }),
+        get = worker.new({
+            size = 10,
+            work = get_article,
             state = {storage = mysql_storage},
         }),
     }

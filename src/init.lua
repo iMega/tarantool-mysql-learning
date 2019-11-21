@@ -110,6 +110,12 @@ local function article_save_handler(req)
     return {status = 200, body = ' test3 ' .. inspect(res) .. ' \n'}
 end
 
+local function article_get_handler(req)
+    local id = req:stash('id')
+    local res = articles.get({site_id = req.site_id, req_id = req.req_id}, id)
+    return {status = 200, res}
+end
+
 local function http_shutdown(req)
     if is_shutdown then
         return {status = 503}
@@ -148,6 +154,7 @@ router:use(http_response_headers, {path = '.*', method = 'ANY'})
 router:use(http_response_headers, {path = '/', method = 'ANY'})
 
 router:route({path = '/', method = 'GET'}, healtcheck)
+router:route({path = '/article/:id', method = 'GET'}, article_get_handler)
 router:route({path = '/save', method = 'POST'}, article_save_handler)
 
 local httpd = http_server.new('0.0.0.0', 9000,

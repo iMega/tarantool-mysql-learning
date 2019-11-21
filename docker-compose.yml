@@ -22,6 +22,7 @@ services:
       - ./schemas/mysql:/docker-entrypoint-initdb.d
       - ./conf/mysql/cnf:/etc/mysql/conf.d
       - ./mysql.log:/var/log/mysql/mysql.log
+      - ./mysql-error.log:/var/log/mysql/mysql-error.log
 
   acceptance:
     image: ${GO_IMG_DEV}
