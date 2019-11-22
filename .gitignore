@@ -1,3 +1,4 @@
 .DS_Store
 mysql.log
 mysql-error.log
+siege.log

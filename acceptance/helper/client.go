@@ -31,7 +31,7 @@ var (
 	}
 )
 
-func RequestPOST(uri, site string, b interface{}) ([]byte, func()) {
+func RequestPOST(uri, site string, b interface{}, i int) ([]byte, func()) {
 	ret, err := json.Marshal(b)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -39,13 +39,13 @@ func RequestPOST(uri, site string, b interface{}) ([]byte, func()) {
 	req.Header.Set("X-SITE-ID", site)
 	req.Header.Set("X-REQ-ID", "efccc287-87c2-4bcb-aec2-6cbc987bd8fd")
 
-	dumpReq(req)
+	// dumpReq(req)
 
 	res, err := http.DefaultClient.Do(req)
 	Expect(err).NotTo(HaveOccurred())
-	Expect(res.StatusCode).To(Equal(http.StatusOK))
+	Expect(res.StatusCode).To(Equal(http.StatusOK), "Records: %d", i-1)
 
-	dumpRes(res)
+	// dumpRes(res)
 
 	body, err := ioutil.ReadAll(res.Body)
 	Expect(err).NotTo(HaveOccurred())

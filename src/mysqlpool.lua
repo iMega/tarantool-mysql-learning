@@ -25,7 +25,8 @@ local function connect()
     pool = res
 end
 
-local need_connect_in = worker.new({work = connect, name = "need_connect"})
+local need_connect_in = worker.segment_pipeline(
+                            {work = connect, name = "need_connect"})
 
 local function connect_checker(ctx)
     if pool == nil then
@@ -40,12 +41,6 @@ local function connect_checker(ctx)
     end
     pool:put(conn)
 end
-
-local connect_checker_in = worker.new({
-    work = connect_checker,
-    timeout = 10,
-    name = "connect_checker",
-})
 
 local function get_pool()
     return {
@@ -62,6 +57,13 @@ local function get_pool()
         end,
     }
 end
+
+local connect_checker_in = worker.segment_pipeline(
+                               {
+        work = connect_checker,
+        timeout = 10,
+        name = "connect_checker",
+    })
 
 local function new()
     connect_checker_in(nil, true)
