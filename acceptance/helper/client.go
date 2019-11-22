@@ -57,7 +57,7 @@ func RequestPOST(uri, site string, b interface{}, i int) ([]byte, func()) {
 	return body, bodyClose
 }
 
-func RequestGET(uri, site string) ([]byte, func()) {
+func RequestGET(uri, site string, expectStatus int) ([]byte, func()) {
 	req, err := http.NewRequest(http.MethodGet, APIURL+uri, nil)
 	req.Header.Set("X-SITE-ID", site)
 	req.Header.Set("X-REQ-ID", "efccc287-87c2-4bcb-aec2-6cbc987bd8fd")
@@ -66,7 +66,7 @@ func RequestGET(uri, site string) ([]byte, func()) {
 
 	res, err := http.DefaultClient.Do(req)
 	Expect(err).NotTo(HaveOccurred())
-	Expect(res.StatusCode).To(Equal(http.StatusOK))
+	Expect(res.StatusCode).To(Equal(expectStatus))
 
 	dumpRes(res)
 

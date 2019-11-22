@@ -122,6 +122,9 @@ end
 local function article_get_handler(req)
     local id = req:stash('id')
     local res = articles.get({site_id = req.site_id, req_id = req.req_id}, id)
+    if res == nil then
+        return {status = 404}
+    end
     return {status = 200, body = res}
 end
 

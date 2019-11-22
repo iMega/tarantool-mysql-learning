@@ -52,9 +52,9 @@ var _ = Describe("Articles", func() {
 		})
 	})
 
-	Context("get article #1", func() {
-		It("article geting", func() {
-			b, bc := helper.RequestGET("/article/2", "100500")
+	Context("get article #2", func() {
+		It("article getting", func() {
+			b, bc := helper.RequestGET("/article/2", "100500", 200)
 			bc()
 
 			actual := Article{}
@@ -63,6 +63,13 @@ var _ = Describe("Articles", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(expected.Title).To(Equal(actual.Title))
+		})
+	})
+
+	Context("not exists article", func() {
+		It("getting 404", func() {
+			_, bc := helper.RequestGET("/article/3", "100500", 404)
+			bc()
 		})
 	})
 
