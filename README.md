@@ -66,6 +66,13 @@ tmlapp        | #1  0x5601c1b68dda in _ZL12sig_fatal_cbiP9siginfo_tPv+ca
 tmlapp        | #2  0x7f8d1ba40e17 in sigwaitinfo+8
 ```
 
+Up project
+
+```
+$ make test
+$ docker exec -it tmlapp console
+```
+
 Reproduce case:
 
 ```
