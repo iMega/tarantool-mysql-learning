@@ -60,12 +60,13 @@ end
 local function consumer(worker)
     local msg
 
+    log.info("................. 4 %s", worker.name)
     if worker.timeout == nil then
         msg = worker.channel_in:get()
     else
         msg = worker.channel_in:get(worker.timeout)
     end
-
+    log.info("................. 5 %s", worker.name)
     if msg == nil then
         msg = {ctx = nil, input = nil}
     end
@@ -73,12 +74,15 @@ local function consumer(worker)
     -- TODO need append system message for shutdown
     -- worker.shutdown(worker.state)
 
+    log.info("................. 6 %s", worker.name)
     local ok, result = pcall(worker.work, msg.ctx, worker.state, msg.input)
     if not ok then
         log.error('failed to start function of worker %s', worker.name)
     end
+    log.info("................. 7 %s", worker.name)
 
     if msg.channel_out:has_readers() then
+        log.info("................. 8 %s", worker.name)
         log.debug('attempt to put a message to channel of worker %s',
                   worker.name)
         ok = msg.channel_out:put(result, 60)
@@ -87,6 +91,7 @@ local function consumer(worker)
                       worker.name, 'because no free slots or channel is closed.')
         end
     end
+    log.info("................. 9 %s", worker.name)
 
     return consumer(worker)
 end
@@ -102,10 +107,14 @@ local function new(w)
         shutdown = w.shutdown or shutdownEmpty,
         timeout = w.timeout,
     })
+    log.info("create fiber %s", w.name or '')
 
     return function(ctx, input)
+        log.info("................. 1 %s", w.name or '')
         local channel_out = fiber.channel()
+        log.info("................. 2 %s", w.name or '')
         channel_in:put({ctx = ctx, input = input, channel_out = channel_out})
+        log.info("................. 3 %s", w.name or '')
         return channel_out:get(w.response and w.response.timeout)
     end
 end
