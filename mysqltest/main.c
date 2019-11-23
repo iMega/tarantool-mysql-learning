@@ -103,7 +103,7 @@ int main(char **args)
         fprintf(stdout, "  row %d\n", row_count);
 
         fprintf(stdout, "  COL: %s\n", str_data);
-        // fprintf(stdout, "  COL: %s\n", result_binds[row_count].buffer);
+        // fprintf(stdout, "  COL: %p\n", result_binds[row_count].buffer);
     }
 
     // state = mysql_query(connection, "select `f_longtext_null` from mytable where pri = 2");

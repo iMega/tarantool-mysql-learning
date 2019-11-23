@@ -2,7 +2,8 @@ FROM tarantool/tarantool:2.2.1 as builder
 
 RUN apk add --upd alpine-sdk cmake openssl-dev curl git wget unzip && \
     luarocks install inspect && \
-    tarantoolctl rocks install mysql
+    tarantoolctl rocks install mysql && \
+    tarantoolctl rocks list
 # /usr/local/share/lua/5.1/inspect.lua
 #-- Installing: /opt/tarantool/.rocks/share/tarantool/rocks/mysql/scm-1/lib/mysql/driver.so
 #-- Installing: /opt/tarantool/.rocks/share/tarantool/rocks/mysql/scm-1/lua/mysql/init.lua
