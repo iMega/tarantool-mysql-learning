@@ -3,3 +3,4 @@ mysql.log
 mysql-error.log
 siege.log
 core
+.vscode
