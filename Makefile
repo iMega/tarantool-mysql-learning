@@ -17,7 +17,7 @@ acceptance:
 	@GO_IMG_DEV=$(GO_IMG_DEV) docker-compose up --abort-on-container-exit acceptance
 
 lint:
-	@docker run --rm -v $(CURDIR):/data yangm97/luacheck
+	@-docker run --rm -v $(CURDIR):/data yangm97/luacheck
 
 test: lint clean acceptance
 
