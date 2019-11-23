@@ -50,7 +50,7 @@ int main(char **args)
     param_binds = (MYSQL_BIND *)calloc(sizeof(*param_binds), paramCount);
     values = (uint64_t *)calloc(sizeof(*values), paramCount);
 
-    int val = 1;
+    int val = 2;
 
     param_binds[0].buffer_type = MYSQL_TYPE_LONG;
     param_binds[0].buffer_length = 8;
@@ -76,11 +76,13 @@ int main(char **args)
     MYSQL_BIND *result_binds = (MYSQL_BIND *)calloc(sizeof(MYSQL_BIND), col_count);
     MYSQL_FIELD *fields = mysql_fetch_fields(meta);
 
+    char str_data[50];
     unsigned long col_no;
     for (col_no = 0; col_no < col_count; ++col_no)
     {
         result_binds[col_no].buffer_type = MYSQL_TYPE_STRING;
-        result_binds[col_no].buffer = (char *)malloc(fields[col_no].length);
+        // result_binds[col_no].buffer = (char *)malloc(fields[col_no].length);
+        result_binds[col_no].buffer = (char *)str_data;
         result_binds[col_no].buffer_length = fields[col_no].length;
         result_binds[col_no].length = (unsigned long *)malloc(sizeof(unsigned long));
         result_binds[col_no].is_null = (my_bool *)malloc(sizeof(my_bool));
@@ -100,19 +102,9 @@ int main(char **args)
         row_count++;
         fprintf(stdout, "  row %d\n", row_count);
 
-        fprintf(stdout, "  COL: %s\n", result_binds[row_count].buffer);
+        fprintf(stdout, "  COL: %s\n", str_data);
+        // fprintf(stdout, "  COL: %s\n", result_binds[row_count].buffer);
     }
-
-    // for (col_no = 0; col_no < col_count; ++col_no)
-    // {
-    //     if (*results[col_no].is_null)
-    //         continue;
-    //     lua_pushstring(L, fields[col_no].name);
-    //     lua_mysql_push_value(L, fields + col_no,
-    //                          results[col_no].buffer,
-    //                          *results[col_no].length);
-    //     lua_settable(L, -3);
-    // }
 
     // state = mysql_query(connection, "select `f_longtext_null` from mytable where pri = 2");
     // if (state != 0)
@@ -121,23 +113,25 @@ int main(char **args)
     //     return 1;
     // }
 
-    result = mysql_store_result(connection);
+    // result = mysql_store_result(connection);
 
-    do
-    {
-        row = mysql_fetch_row(result);
-        if (!row)
-        {
-            break;
-        }
+    // do
+    // {
+    //     row = mysql_fetch_row(result);
+    //     if (!row)
+    //     {
+    //         break;
+    //     }
 
-        printf("id: %s, val: %s\n",
-               (row[0] ? row[0] : "NULL"),
-               (row[1] ? row[1] : "NULL"));
+    //     printf("id: %s, val: %s\n",
+    //            (row[0] ? row[0] : "NULL"),
+    //            (row[1] ? row[1] : "NULL"));
 
-    } while (true);
+    // } while (true);
+    // mysql_free_result(result);
 
-    mysql_free_result(result);
+    mysql_stmt_free_result(stmt);
+    mysql_stmt_close(stmt);
     mysql_close(connection);
 
     printf("Done.\n");
