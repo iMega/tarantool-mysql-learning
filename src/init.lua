@@ -3,7 +3,7 @@ box.cfg{
     feedback_enabled = false,
     log_format = 'json',
     log_level = 5,
-    memtx_memory = 1.4 * 1024 * 1024 * 1024,
+    -- memtx_memory = 1.4 * 1024 * 1024 * 1024,
 }
 
 -- local log = require('log')
