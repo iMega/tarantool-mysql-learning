@@ -58,12 +58,10 @@ end
 local function get_article(ctx, state, input)
     local ok, res = pcall(box.space.articles.select, box.space.articles,
                           {tonumber(ctx.site_id), tonumber(input)})
-    log.info("================0")
     if ok and res[1] ~= nil then
-        log.info("================1")
         return res[1][3]
     end
-    log.info("================2")
+
     return state.storage.get(ctx, input)
 end
 

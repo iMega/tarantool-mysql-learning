@@ -34,6 +34,23 @@ box.once('articles', function()
         type = 'hash',
         parts = {1, 'unsigned', 2, 'unsigned'},
     })
+
+    local articles_page_space = box.schema.space.create('articles_page', {
+        engine = 'memtx',
+        is_local = true,
+        temporary = true,
+    })
+
+    articles_page_space:format({
+        {name = 'site_id', type = 'unsigned'},
+        {name = 'page_id', type = 'unsigned'},
+        {name = 'entity', type = 'string'},
+    })
+
+    articles_page_space:create_index('primary', {
+        type = 'hash',
+        parts = {1, 'unsigned', 2, 'unsigned'},
+    })
 end)
 
 -- 2.2.1 not work

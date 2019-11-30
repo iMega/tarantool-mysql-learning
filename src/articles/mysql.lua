@@ -1,6 +1,5 @@
 local log = require('log')
 local worker = require('worker')
-local inspect = require('inspect')
 
 local db
 
@@ -65,10 +64,8 @@ local function save(ctx, _, input)
     return db.extract(data)
 end
 
-local function get1(ctx, _, input)
-    log.info("++++++++++ 1")
+local function get(ctx, _, input)
     local conn = db.get()
-    log.info("++++++++++ 2")
     if conn == nil then
         log.error({
             message = 'failed to insert data to mysql, db instance not yet initialized.',
@@ -77,7 +74,6 @@ local function get1(ctx, _, input)
         })
         return
     end
-    log.info("++++++++++ 3")
 
     local q = [[select
                     siteId,
@@ -92,17 +88,11 @@ local function get1(ctx, _, input)
                     priority,
                     isVisible
                 from articles
-                where id = ?
-                    and siteId = ?
+                where id = %d
+                    and siteId = %d
                     and isDeleted = 0]]
-    log.info("++++$$$$$$$$$$$$$$++++++ 3.5 , %s", inspect(conn))
-    -- local ok, data = pcall(conn.execute, conn, q, input, ctx.site_id)
     local ok, data = pcall(conn.execute, conn,
-                           'select siteId, categoryId, timestamp, title, content, tags, seoMetaDesc, seoMetaKeywords, seoTitle, priority, isVisible from articles where id = 2 and siteId = 100',
-                           2)
-    -- local data, err = conn:execute(q, tonumber(input), tonumber(ctx.site_id))
-    -- local data, err = conn:execute('select siteId, categoryId, timestamp, title, content, tags, seoMetaDesc, seoMetaKeywords, seoTitle, priority, isVisible from articles where id = 2 and siteId = 100 and isDeleted = 0')
-    log.info("++++++++++ 4 %s, %s", inspect(data), inspect(err))
+                           string.format(q, input, ctx.site_id))
     if not ok then
         log.error({
             message = string.format('failed getting article from mysql, %s',
@@ -113,7 +103,6 @@ local function get1(ctx, _, input)
         db.put(conn)
         return
     end
-    log.info("++++++++++ %s", inspect(data))
 
     db.put(conn)
 
@@ -124,7 +113,7 @@ local function new(opts)
     db = opts.db
     return {
         save = worker.new({size = 10, work = save}),
-        get = worker.new({size = 10, work = get1, name = 'mygetter'}),
+        get = worker.new({size = 10, work = get}),
     }
 end
 
